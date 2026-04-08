@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Myra's Kingdom">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Myra's Kingdom</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Georgia,serif;background:#fdf4ff;min-height:100vh;padding:20px 16px;color:#1e1b2e;}
+h1{text-align:center;color:#7c3aed;font-size:26px;margin-bottom:4px;}
+.sub{text-align:center;color:#9ca3af;font-size:14px;font-family:sans-serif;margin-bottom:18px;font-style:italic;}
+.nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;}
+.nb{background:#fff;border:1.5px solid #e9d5ff;border-radius:24px;padding:8px 16px;font-family:Georgia,serif;font-size:13px;color:#7c3aed;cursor:pointer;}
+.nb:hover,.nb.active{background:#7c3aed;color:#fff;border-color:#7c3aed;}
+.page{display:none;}.page.active{display:block;}
+.card{background:#fff;border:1.5px solid #e9d5ff;border-radius:16px;padding:20px;margin-bottom:16px;}
+.ct{font-size:16px;font-weight:bold;color:#7c3aed;margin-bottom:14px;}
+.sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.scol{display:flex;flex-direction:column;gap:5px;min-width:0;}
+.shdr{text-align:center;font-family:sans-serif;font-weight:500;font-size:12px;color:#6b7280;padding:4px 0 8px;border-bottom:1px solid #e9d5ff;}
+.sblk{border-radius:8px;padding:10px 4px;text-align:center;font-family:sans-serif;font-size:11px;line-height:1.4;cursor:pointer;position:relative;user-select:none;}
+.sblk.done{opacity:0.45;}
+.sblk .chk{display:none;position:absolute;top:4px;right:5px;font-size:13px;}
+.sblk.done .chk{display:block;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:16px;}
+.sb{background:#ede9fe;border-radius:10px;padding:12px;text-align:center;}
+.sn{font-size:24px;font-weight:bold;color:#7c3aed;}
+.sl{font-size:11px;color:#6b7280;font-family:sans-serif;margin-top:2px;}
+.tbl{width:100%;border-collapse:collapse;font-family:sans-serif;font-size:13px;}
+.tbl th{font-size:11px;color:#6b7280;text-align:left;padding:6px 8px;border-bottom:1px solid #e9d5ff;}
+.tbl td{padding:8px;border-bottom:1px solid #f3e8ff;vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+input[type=text],select{border:1.5px solid #e9d5ff;border-radius:8px;padding:8px 10px;font-family:sans-serif;font-size:13px;color:#1e1b2e;background:#fdf4ff;outline:none;}
+input[type=text]:focus,select:focus{border-color:#7c3aed;}
+.btn{background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:sans-serif;font-size:13px;cursor:pointer;}
+.btn:hover{background:#6d28d9;}
+.bsm{background:#fee2e2;color:#b91c1c;border:none;border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;font-family:sans-serif;}
+.bdg{display:inline-block;font-size:11px;font-family:sans-serif;padding:3px 9px;border-radius:20px;cursor:pointer;}
+.bdone{background:#d1fae5;color:#059669;}
+.bprog{background:#fef3c7;color:#d97706;}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.bkc{background:#ede9fe;border:1.5px solid #e9d5ff;border-radius:12px;padding:12px;position:relative;}
+.bkt{font-size:13px;font-weight:bold;color:#3c3489;margin-bottom:3px;}
+.bka{font-size:11px;color:#6b7280;font-family:sans-serif;}
+.fav{position:absolute;top:8px;right:10px;cursor:pointer;font-size:16px;}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.bcard{background:#fff;border:1.5px solid #e9d5ff;border-radius:12px;padding:16px 10px;text-align:center;}
+.bcard.earned{border-color:#d97706;background:#fef3c7;}
+.bcard.locked{opacity:0.4;}
+.bi{font-size:32px;margin-bottom:6px;}
+.bn{font-size:13px;font-weight:bold;margin-bottom:3px;}
+.bd{font-size:11px;color:#6b7280;font-family:sans-serif;line-height:1.4;}
+.wl{list-style:none;}
+.wi{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3e8ff;font-family:sans-serif;font-size:14px;}
+.wi:last-child{border-bottom:none;}
+.wi.got{text-decoration:line-through;color:#9ca3af;}
+.wi input[type=checkbox]{accent-color:#7c3aed;width:15px;height:15px;cursor:pointer;}
+.wdel{margin-left:auto;background:none;border:none;color:#d1d5db;cursor:pointer;font-size:15px;}
+.wdel:hover{color:#b91c1c;}
+.gbox{background:#ede9fe;border-radius:14px;padding:20px;text-align:center;}
+.gword{font-size:48px;color:#7c3aed;font-weight:bold;letter-spacing:6px;margin:14px 0;}
+.choices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0;}
+.cb{background:#fff;border:1.5px solid #e9d5ff;border-radius:10px;padding:10px 20px;font-size:17px;cursor:pointer;font-family:sans-serif;}
+.cb:hover{border-color:#7c3aed;}
+.cb.correct{background:#d1fae5;border-color:#059669;color:#059669;}
+.cb.wrong{background:#fee2e2;border-color:#f87171;}
+.lvlr{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;}
+.lb{background:#fff;border:1.5px solid #e9d5ff;border-radius:20px;padding:6px 14px;font-family:sans-serif;font-size:13px;color:#7c3aed;cursor:pointer;}
+.lb:hover,.lb.active{background:#7c3aed;color:#fff;border-color:#7c3aed;}
+.mgrid{display:grid;gap:8px;max-width:500px;margin:0 auto 14px;}
+.mc{perspective:500px;cursor:pointer;height:62px;}
+.mi{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.3s;}
+.mc.flipped .mi,.mc.matched .mi{transform:rotateY(180deg);}
+.mf,.mb{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:bold;}
+.mf{background:#7c3aed;color:#fff;font-size:20px;}
+.mb{background:#fff;border:2px solid #e9d5ff;color:#7c3aed;transform:rotateY(180deg);font-family:sans-serif;font-size:15px;}
+.mc.matched .mb{background:#d1fae5;border-color:#059669;color:#059669;}
+.mc.wrong .mb{background:#fee2e2;border-color:#f87171;}
+.winbox{background:#fef3c7;border:2px solid #d97706;border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;}
+.mopt{border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;border:2px solid #e9d5ff;background:#fff;-webkit-tap-highlight-color:transparent;}
+.mopt.sel{border-color:#7c3aed;background:#ede9fe;}
+</style>
+</head>
+<body>
+<div style="text-align:center;padding:28px 0 16px;">
+  <div style="font-size:44px;">👑</div>
+  <h1>✨ Myra's Kingdom ✨</h1>
+  <p class="sub">A magical place just for Myra</p>
+</div>
+<div class="nav">
+  <button class="nb active" onclick="show('schedule',this)">🗓️ Schedule</button>
+  <button class="nb" onclick="show('menu',this)">🍽️ Menu</button>
+  <button class="nb" onclick="show('log',this)">📖 Reading Log</button>
+  <button class="nb" onclick="show('shelf',this)">🏰 My Shelf</button>
+  <button class="nb" onclick="show('wishlist',this)">🦄 Wish List</button>
+  <button class="nb" onclick="show('badges',this)">🌟 Badges</button>
+  <button class="nb" onclick="show('games',this)">🎮 Word Game</button>
+  <button class="nb" onclick="show('match',this)">🃏 Match Game</button>
+  <button class="nb" onclick="show('math',this)">➕ Math</button>
+  <button class="nb" onclick="show('books',this)">📚 Book Ideas</button>
+  <button class="nb" onclick="show('apps',this)">📱 Apps</button>
+</div>
+
+<div id="page-schedule" class="page active">
+  <div class="card">
+    <div class="ct">🗓️ Myra's weekly schedule</div>
+    <button class="btn" onclick="exportCal()" style="margin-bottom:8px;width:100%;padding:12px;">📅 Export to Apple / Google Calendar</button>
+    <button class="btn" onclick="printSchedule()" style="margin-bottom:14px;width:100%;padding:12px;background:#059669;">🖨️ Print Schedule / Save as PDF</button>
+    <div class="sched-grid" id="sched-grid"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+      <span style="display:flex;align-items:center;gap:5px;font-family:sans-serif;font-size:11px;color:#6b7280;"><span style="width:12px;height:12px;border-radius:3px;background:#B5D4F4;display:inline-block;"></span>School</span>
+      <span style="display:flex;align-items:center;gap:5px;font-family:sans-serif;font-size:11px;color:#6b7280;"><span style="width:12px;height:12px;border-radius:3px;background:#CECBF6;display:inline-block;"></span>Activity</span>
+      <span style="display:flex;align-items:center;gap:5px;font-family:sans-serif;font-size:11px;color:#6b7280;"><span style="width:12px;height:12px;border-radius:3px;background:#C0DD97;display:inline-block;"></span>Reading</span>
+      <span style="display:flex;align-items:center;gap:5px;font-family:sans-serif;font-size:11px;color:#6b7280;"><span style="width:12px;height:12px;border-radius:3px;background:#FAC775;display:inline-block;"></span>Piano</span>
+      <span style="display:flex;align-items:center;gap:5px;font-family:sans-serif;font-size:11px;color:#6b7280;"><span style="width:12px;height:12px;border-radius:3px;background:#F0997B;display:inline-block;"></span>Dinner</span>
+    </div>
+  </div>
+</div>
+
+<div id="page-menu" class="page">
+  <div class="card">
+    <div class="ct">🍽️ Tomorrow's menu</div>
+    <p style="font-family:sans-serif;font-size:13px;color:#6b7280;margin-bottom:18px;">Pick what you want to eat tomorrow! Tap as many as you like! 🌟</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" id="menu-kids"></div>
+    <div id="menu-summary-wrap" style="display:none;margin-top:20px;background:#ede9fe;border-radius:14px;padding:16px;">
+      <div style="font-weight:bold;color:#7c3aed;font-family:sans-serif;font-size:14px;margin-bottom:10px;">📋 Tomorrow's order</div>
+      <div id="menu-summary"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn" onclick="saveMenu()">✅ Confirm order</button>
+        <button class="btn" style="background:#f3f4f6;color:#6b7280;" onclick="resetMenu()">🔄 Start over</button>
+      </div>
+    </div>
+    <div id="menu-confirmed" style="display:none;margin-top:16px;">
+      <div style="background:#d1fae5;border-radius:14px;padding:16px;margin-bottom:12px;">
+        <div style="font-weight:bold;color:#059669;font-family:sans-serif;font-size:15px;margin-bottom:4px;">✅ Order confirmed!</div>
+        <div id="menu-date" style="font-family:sans-serif;font-size:12px;color:#6b7280;margin-bottom:10px;"></div>
+        <div id="menu-confirmed-text" style="font-family:sans-serif;font-size:13px;color:#065f46;"></div>
+      </div>
+      <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:14px;padding:16px;margin-bottom:12px;">
+        <div style="font-weight:bold;color:#92400e;font-family:sans-serif;font-size:14px;margin-bottom:10px;">🛒 Grocery list</div>
+        <div id="menu-grocery"></div>
+      </div>
+      <button class="btn" style="background:#059669;width:100%;padding:12px;" onclick="resetMenu()">🔄 New order</button>
+    </div>
+  </div>
+</div>
+
+<div id="page-log" class="page">
+  <div class="stats">
+    <div class="sb"><div class="sn" id="s-sess">0</div><div class="sl">Sessions</div></div>
+    <div class="sb"><div class="sn" id="s-done">0</div><div class="sl">Books finished</div></div>
+    <div class="sb"><div class="sn" id="s-str">0</div><div class="sl">Streak 🔥</div></div>
+    <div class="sb"><div class="sn" id="s-stars">0</div><div class="sl">Stars ⭐</div></div>
+  </div>
+  <div class="card">
+    <div class="ct">📜 Reading adventures</div>
+    <table class="tbl"><thead><tr><th>Date</th><th>Book</th><th>Slot</th><th>Status</th><th>Stars</th><th></th></tr></thead>
+    <tbody id="log-body"></tbody></table>
+    <div class="row">
+      <input type="text" id="log-book" placeholder="Book title..." style="flex:1;min-width:130px;">
+      <select id="log-slot"><option>After school</option><option>Bedtime</option><option>Weekend</option></select>
+      <button class="btn" onclick="addLog()">+ Add</button>
+    </div>
+  </div>
+</div>
+
+<div id="page-shelf" class="page">
+  <div class="card">
+    <div class="ct">🏰 Books I've read</div>
+    <div class="shelf" id="shelf-grid"></div>
+    <div class="row" style="margin-top:16px;">
+      <input type="text" id="sh-title" placeholder="Book title..." style="flex:1;min-width:130px;">
+      <input type="text" id="sh-author" placeholder="Author..." style="flex:1;min-width:110px;">
+      <button class="btn" onclick="addShelf()">+ Add</button>
+    </div>
+  </div>
+</div>
+
+<div id="page-wishlist" class="page">
+  <div class="card">
+    <div class="ct">🦄 Books I want to read</div>
+    <ul class="wl" id="wish-list"></ul>
+    <div class="row">
+      <input type="text" id="wish-in" placeholder="Book I want to read..." style="flex:1;">
+      <button class="btn" onclick="addWish()">+ Add</button>
+    </div>
+  </div>
+</div>
+
+<div id="page-badges" class="page">
+  <div class="card">
+    <div class="ct">🌟 Magical badges</div>
+    <div class="bgrid" id="badges-grid"></div>
+  </div>
+</div>
+
+<div id="page-games" class="page">
+  <div class="card">
+    <div class="ct">🎮 Spell the word!</div>
+    <div class="gbox">
+      <div style="font-family:sans-serif;font-size:13px;color:#6b7280;">Look at the picture and choose the right spelling!</div>
+      <div class="gword" id="g-emoji"></div>
+      <div class="choices" id="g-choices"></div>
+      <div id="g-feedback" style="font-size:20px;min-height:32px;margin:8px 0;"></div>
+      <div id="g-score" style="font-family:sans-serif;font-size:13px;color:#6b7280;">Score: 0 / 0</div>
+      <button class="btn" style="margin-top:12px;" onclick="nextQ()">Next word ➜</button>
+    </div>
+  </div>
+</div>
+
+<div id="page-match" class="page">
+  <div class="card">
+    <div class="ct">🃏 Sight word match</div>
+    <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+      <div class="sb"><div class="sn" id="m-moves">0</div><div class="sl">Moves</div></div>
+      <div class="sb"><div class="sn" id="m-matched">0</div><div class="sl">Matched</div></div>
+      <div class="sb"><div class="sn" id="m-time">0:00</div><div class="sl">Time</div></div>
+    </div>
+    <div class="lvlr">
+      <button class="lb active" id="ml0" onclick="setML(0)">🌱 Easy</button>
+      <button class="lb" id="ml1" onclick="setML(1)">🌟 Medium</button>
+      <button class="lb" id="ml2" onclick="setML(2)">👑 Hard</button>
+    </div>
+    <div id="m-win" class="winbox" style="display:none;">
+      <div style="font-size:22px;font-weight:bold;color:#d97706;">🎉 You did it!</div>
+      <div id="m-win-txt" style="font-family:sans-serif;font-size:13px;color:#92400e;margin:6px 0 12px;"></div>
+      <button class="btn" onclick="startMatch()">Play again ✨</button>
+    </div>
+    <div class="mgrid" id="m-grid"></div>
+    <div style="text-align:center;"><button class="btn" onclick="startMatch()">🔀 New game</button></div>
+  </div>
+</div>
+
+<div id="page-math" class="page">
+  <div class="card">
+    <div class="ct">➕ Addition practice</div>
+    <div style="font-family:sans-serif;font-size:13px;color:#6b7280;margin-bottom:14px;">Tap the answer! 🌟</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+      <div class="sb"><div class="sn" id="math-score">0</div><div class="sl">Score</div></div>
+      <div class="sb"><div class="sn" id="math-total">0</div><div class="sl">Tried</div></div>
+      <div class="sb"><div class="sn" id="math-streak">0</div><div class="sl">Streak 🔥</div></div>
+    </div>
+    <div style="background:#ede9fe;border-radius:16px;padding:24px;text-align:center;">
+      <div id="math-visual" style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-size:28px;min-height:40px;"></div>
+      <div id="math-q" style="font-size:36px;font-weight:bold;color:#7c3aed;margin-bottom:20px;"></div>
+      <div id="math-choices" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"></div>
+      <div id="math-fb" style="font-size:22px;min-height:32px;margin-top:12px;"></div>
+    </div>
+    <div style="text-align:center;margin-top:14px;">
+      <button class="btn" onclick="nextMath()">Next ➜</button>
+      <button class="btn" style="background:#f3f4f6;color:#6b7280;margin-left:8px;" onclick="resetMath()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<div id="page-books" class="page">
+  <div class="card">
+    <div class="ct">📚 Books Myra might love</div>
+    <p style="font-family:sans-serif;font-size:13px;color:#6b7280;margin-bottom:16px;">Tap a book to add it to your Wish List! 🦄</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;" id="book-filters"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;" id="book-grid"></div>
+  </div>
+</div>
+
+<div id="page-apps" class="page">
+  <div class="card">
+    <div class="ct">📱 My reading apps</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;" id="apps-grid"></div>
+  </div>
+</div>
+
+<script>
+// ── Storage ───────────────────────────────────────────
+var D = {log:[],shelf:[],wishes:[],schedChecks:{},schedDay:''};
+try { var _s = localStorage.getItem('myra_k'); if(_s) D = JSON.parse(_s); } catch(e){}
+function save(){ try{ localStorage.setItem('myra_k', JSON.stringify(D)); }catch(e){} }
+
+// ── Nav ───────────────────────────────────────────────
+function show(id, btn){
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nb').forEach(function(b){ b.classList.remove('active'); });
+  var pg = document.getElementById('page-' + id);
+  if(pg) pg.classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id === 'schedule') renderSchedule();
+  if(id === 'menu') renderMenu();
+  if(id === 'log') renderLog();
+  if(id === 'shelf') renderShelf();
+  if(id === 'wishlist') renderWishlist();
+  if(id === 'badges') renderBadges();
+  if(id === 'games') nextQ();
+  if(id === 'match') startMatch();
+  if(id === 'math') nextMath();
+  if(id === 'books') renderBooks();
+  if(id === 'apps') renderApps();
+}
+
+// ── Menu ──────────────────────────────────────────────
+var menuCats = {
+  breakfast: {label:'🌅 Breakfast', bg:'#FAC775', text:'#633806', opts:[
+    {n:'Pancakes',e:'🥞'},{n:'Waffles',e:'🧇'},{n:'Cereal & Milk',e:'🥣'},{n:'Yogurt',e:'🍶'},{n:'Eggs',e:'🍳'}
+  ]},
+  dinner: {label:'🌙 Dinner', bg:'#F0997B', text:'#712B13', opts:[
+    {n:'Roti',e:'🫓'},{n:'Rice',e:'🍚'},{n:'Pizza',e:'🍕'},{n:'Grilled Cheese',e:'🧀'},{n:'Dosa',e:'🥘'},{n:'Uttapam',e:'🫔'}
+  ]},
+  sides: {label:'🥗 Veggies', bg:'#C0DD97', text:'#27500A', opts:[
+    {n:'Cheese',e:'🧀'},{n:'Broccoli',e:'🥦'},{n:'Edamame',e:'🫘'},{n:'Bell Pepper',e:'🫑'},{n:'Cucumber',e:'🥒'},{n:'Carrots',e:'🥕'}
+  ]}
+};
+var kids = ['Myra','Kian'];
+var menuSel = {};
+
+function mKey(kid, cat, opt){ return kid + '|' + cat + '|' + opt; }
+function mIsSel(kid, cat, opt){ return menuSel[mKey(kid,cat,opt)] === true; }
+function mToggle(kid, cat, opt){ var k = mKey(kid,cat,opt); menuSel[k] = !menuSel[k]; }
+function mGetPicks(kid){
+  var picks = [];
+  Object.keys(menuCats).forEach(function(cat){
+    menuCats[cat].opts.forEach(function(o){
+      if(mIsSel(kid,cat,o.n)) picks.push(o.n);
+    });
+  });
+  return picks;
+}
+
+function renderMenu(){
+  var wrap = document.getElementById('menu-kids');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  kids.forEach(function(kid){
+    var col = document.createElement('div');
+    col.style.cssText = 'background:#f9f5ff;border-radius:14px;padding:14px;border:1.5px solid #e9d5ff;';
+    var hdr = document.createElement('div');
+    hdr.innerHTML = '<div style="text-align:center;font-size:32px;margin-bottom:4px;">' + (kid==='Myra'?'👸':'🤴') + '</div>' +
+      '<div style="text-align:center;font-weight:bold;font-size:15px;color:#7c3aed;margin-bottom:14px;font-family:sans-serif;">' + kid + '</div>';
+    col.appendChild(hdr);
+    Object.keys(menuCats).forEach(function(cat){
+      var c = menuCats[cat];
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:11px;font-weight:bold;font-family:sans-serif;color:' + c.text + ';background:' + c.bg + ';padding:4px 8px;border-radius:6px;margin-bottom:6px;display:inline-block;';
+      lbl.textContent = c.label;
+      col.appendChild(lbl);
+      var grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px;';
+      c.opts.forEach(function(opt){
+        var sel = mIsSel(kid, cat, opt.n);
+        var btn = document.createElement('div');
+        btn.className = 'mopt' + (sel ? ' sel' : '');
+        btn.setAttribute('data-kid', kid);
+        btn.setAttribute('data-cat', cat);
+        btn.setAttribute('data-opt', opt.n);
+        btn.innerHTML = '<div style="font-size:20px;">' + opt.e + '</div>' +
+          '<div style="font-size:10px;font-family:sans-serif;color:' + (sel?'#7c3aed':'#6b7280') + ';margin-top:2px;">' + opt.n + '</div>';
+        btn.onclick = function(){
+          mToggle(this.getAttribute('data-kid'), this.getAttribute('data-cat'), this.getAttribute('data-opt'));
+          renderMenu();
+        };
+        grid.appendChild(btn);
+      });
+      col.appendChild(grid);
+    });
+    wrap.appendChild(col);
+  });
+  var hasAny = kids.some(function(k){ return mGetPicks(k).length > 0; });
+  var sw = document.getElementById('menu-summary-wrap');
+  if(sw) sw.style.display = hasAny ? 'block' : 'none';
+  var sm = document.getElementById('menu-summary');
+  if(sm){
+    var html = '';
+    kids.forEach(function(k){
+      var picks = mGetPicks(k);
+      if(picks.length) html += '<div style="font-family:sans-serif;font-size:13px;margin-bottom:6px;"><strong>' + (k==='Myra'?'👸':'🤴') + ' ' + k + ':</strong> ' + picks.join(', ') + '</div>';
+    });
+    sm.innerHTML = html || '<div style="font-family:sans-serif;font-size:13px;color:#9ca3af;">No selections yet.</div>';
+  }
+}
+
+var groceryMap = {
+  'Pancakes':['Pancake mix','Eggs','Milk','Butter','Maple syrup'],
+  'Waffles':['Waffle mix','Eggs','Milk','Butter'],
+  'Cereal & Milk':['Cereal','Milk'],
+  'Yogurt':['Yogurt'],
+  'Eggs':['Eggs','Butter'],
+  'Roti':['Whole wheat flour','Butter/ghee'],
+  'Rice':['Rice'],
+  'Pizza':['Pizza dough','Tomato sauce','Mozzarella cheese'],
+  'Grilled Cheese':['Bread','Cheese','Butter'],
+  'Dosa':['Dosa batter','Oil'],
+  'Uttapam':['Uttapam batter','Oil','Onions','Tomatoes'],
+  'Cheese':['Cheese'],
+  'Broccoli':['Broccoli'],
+  'Edamame':['Edamame'],
+  'Bell Pepper':['Bell peppers'],
+  'Cucumber':['Cucumber'],
+  'Carrots':['Carrots']
+};
+
+function saveMenu(){
+  var lines = [];
+  kids.forEach(function(kid){
+    var picks = mGetPicks(kid);
+    if(picks.length) lines.push((kid==='Myra'?'👸':'🤴') + ' <strong>' + kid + ':</strong> ' + picks.join(', '));
+  });
+  var ct = document.getElementById('menu-confirmed-text');
+  if(ct) ct.innerHTML = lines.join('<br>') || 'Nothing selected!';
+  var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  var dd = document.getElementById('menu-date');
+  if(dd) dd.textContent = '📅 For: ' + tomorrow.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  var needed = {};
+  kids.forEach(function(kid){
+    mGetPicks(kid).forEach(function(item){
+      var g = groceryMap[item];
+      if(g) g.forEach(function(i){ needed[i] = true; });
+    });
+  });
+  var gr = document.getElementById('menu-grocery');
+  if(gr){
+    var items = Object.keys(needed);
+    gr.innerHTML = items.length === 0
+      ? '<span style="color:#9ca3af;">You\'re all stocked!</span>'
+      : items.map(function(i){
+          return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #fde68a;">' +
+            '<input type="checkbox" style="accent-color:#d97706;width:16px;height:16px;"><span>' + i + '</span></div>';
+        }).join('');
+  }
+  var sw = document.getElementById('menu-summary-wrap');
+  if(sw) sw.style.display = 'none';
+  var mc = document.getElementById('menu-confirmed');
+  if(mc) mc.style.display = 'block';
+}
+
+function resetMenu(){
+  menuSel = {};
+  var mc = document.getElementById('menu-confirmed');
+  if(mc) mc.style.display = 'none';
+  renderMenu();
+}
+
+// ── Schedule ──────────────────────────────────────────
+var todayKey = new Date().toDateString();
+if(D.schedDay !== todayKey){ D.schedChecks = {}; D.schedDay = todayKey; save(); }
+
+var days = [
+  {name:'Mon',blocks:[
+    {t:'8:30–3:00',l:'🏫 School',bg:'#B5D4F4',c:'#0C447C'},
+    {t:'3:00–3:30',l:'🚗 To piano',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'3:30–4:00',l:'🎹 Piano lesson',bg:'#CECBF6',c:'#3C3489'},
+    {t:'4:00–4:30',l:'🚗 Home',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'4:30–4:40',l:'🎹 Practice',bg:'#FAC775',c:'#633806'},
+    {t:'4:40–5:10',l:'📖 Reading',bg:'#C0DD97',c:'#27500A'},
+    {t:'5:10–5:30',l:'🕹️ Free play',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'5:30–6:00',l:'🍽️ Dinner',bg:'#F0997B',c:'#712B13'},
+    {t:'6:00–6:20',l:'🛁 Bath',bg:'#E6F1FB',c:'#0C447C'},
+    {t:'6:20–6:40',l:'📖 Bedtime read',bg:'#C0DD97',c:'#27500A'},
+    {t:'7:30',l:'😴 Bedtime',bg:'#EEEDFE',c:'#3C3489'}
+  ]},
+  {name:'Tue',blocks:[
+    {t:'8:30–3:00',l:'🏫 School',bg:'#B5D4F4',c:'#0C447C'},
+    {t:'3:00–3:30',l:'📖 Reading',bg:'#C0DD97',c:'#27500A'},
+    {t:'3:30–3:40',l:'🎹 Practice',bg:'#FAC775',c:'#633806'},
+    {t:'3:40–4:30',l:'🕹️ Free play',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'4:30–5:00',l:'🚗 To gym',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'5:00–6:15',l:'🤸 Gymnastics',bg:'#CECBF6',c:'#3C3489'},
+    {t:'6:15–6:45',l:'🚗 Home',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'6:45–7:05',l:'🍽️ Quick dinner',bg:'#F0997B',c:'#712B13'},
+    {t:'7:05–7:20',l:'🛁 Quick bath',bg:'#E6F1FB',c:'#0C447C'},
+    {t:'7:20–7:30',l:'📖 Bedtime read',bg:'#C0DD97',c:'#27500A'},
+    {t:'7:30',l:'😴 Bedtime',bg:'#EEEDFE',c:'#3C3489'}
+  ]},
+  {name:'Wed',blocks:[
+    {t:'8:30–3:00',l:'🏫 School',bg:'#B5D4F4',c:'#0C447C'},
+    {t:'3:00–3:30',l:'📖 Reading',bg:'#C0DD97',c:'#27500A'},
+    {t:'3:30–3:40',l:'🎹 Practice',bg:'#FAC775',c:'#633806'},
+    {t:'3:40–4:30',l:'🕹️ Free play',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'4:30–5:00',l:'🚗 To art',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'5:00–6:15',l:'🎨 Art',bg:'#CECBF6',c:'#3C3489'},
+    {t:'6:15–6:45',l:'🚗 Home',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'6:45–7:05',l:'🍽️ Quick dinner',bg:'#F0997B',c:'#712B13'},
+    {t:'7:05–7:20',l:'🛁 Quick bath',bg:'#E6F1FB',c:'#0C447C'},
+    {t:'7:20–7:30',l:'📖 Bedtime read',bg:'#C0DD97',c:'#27500A'},
+    {t:'7:30',l:'😴 Bedtime',bg:'#EEEDFE',c:'#3C3489'}
+  ]},
+  {name:'Thu',blocks:[
+    {t:'8:30–3:00',l:'🏫 School',bg:'#B5D4F4',c:'#0C447C'},
+    {t:'3:00–3:40',l:'🍎 Snack',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'3:40–4:15',l:'🚗 To music',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'4:15–5:00',l:'🎵 Music',bg:'#CECBF6',c:'#3C3489'},
+    {t:'5:00–5:30',l:'🚗 Home',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'5:30–5:40',l:'🎹 Practice',bg:'#FAC775',c:'#633806'},
+    {t:'5:40–6:10',l:'📖 Reading',bg:'#C0DD97',c:'#27500A'},
+    {t:'6:10–6:30',l:'🍽️ Dinner',bg:'#F0997B',c:'#712B13'},
+    {t:'6:30–6:50',l:'🛁 Bath',bg:'#E6F1FB',c:'#0C447C'},
+    {t:'6:50–7:10',l:'📖 Bedtime read',bg:'#C0DD97',c:'#27500A'},
+    {t:'7:30',l:'😴 Bedtime',bg:'#EEEDFE',c:'#3C3489'}
+  ]},
+  {name:'Fri',blocks:[
+    {t:'8:30–3:00',l:'🏫 School',bg:'#B5D4F4',c:'#0C447C'},
+    {t:'3:00–3:30',l:'📖 Reading',bg:'#C0DD97',c:'#27500A'},
+    {t:'3:30–3:40',l:'🎹 Practice',bg:'#FAC775',c:'#633806'},
+    {t:'3:40–5:30',l:'🕹️ Free play',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'5:30–6:00',l:'🍽️ Dinner',bg:'#F0997B',c:'#712B13'},
+    {t:'6:00–6:20',l:'🛁 Bath',bg:'#E6F1FB',c:'#0C447C'},
+    {t:'6:20–6:40',l:'📖 Bedtime read',bg:'#C0DD97',c:'#27500A'},
+    {t:'7:30',l:'😴 Bedtime',bg:'#EEEDFE',c:'#3C3489'}
+  ]},
+  {name:'Sat',blocks:[
+    {t:'9:45–10:15',l:'🚗 To ballet',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'10:15–11:00',l:'🩰 Ballet',bg:'#CECBF6',c:'#3C3489'},
+    {t:'11:00–11:30',l:'🚗 Home',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'11:30–11:40',l:'🎹 Practice',bg:'#FAC775',c:'#633806'},
+    {t:'11:40–12:10',l:'📖 Reading',bg:'#C0DD97',c:'#27500A'},
+    {t:'12:10–5:30',l:'🕹️ Free play',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'5:30–6:00',l:'🍽️ Dinner',bg:'#F0997B',c:'#712B13'},
+    {t:'6:00–6:20',l:'🛁 Bath',bg:'#E6F1FB',c:'#0C447C'},
+    {t:'6:20–6:40',l:'📖 Bedtime read',bg:'#C0DD97',c:'#27500A'},
+    {t:'7:30',l:'😴 Bedtime',bg:'#EEEDFE',c:'#3C3489'}
+  ]},
+  {name:'Sun',blocks:[
+    {t:'Morning',l:'🕹️ Free morning',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'Anytime',l:'🎹 Practice',bg:'#FAC775',c:'#633806'},
+    {t:'Anytime',l:'📖 Reading',bg:'#C0DD97',c:'#27500A'},
+    {t:'Afternoon',l:'🕹️ Free play',bg:'#f3f4f6',c:'#6b7280'},
+    {t:'5:30–6:00',l:'🍽️ Dinner',bg:'#F0997B',c:'#712B13'},
+    {t:'6:00–6:20',l:'🛁 Bath',bg:'#E6F1FB',c:'#0C447C'},
+    {t:'6:20–6:40',l:'📖 Bedtime read',bg:'#C0DD97',c:'#27500A'},
+    {t:'7:30',l:'😴 Bedtime',bg:'#EEEDFE',c:'#3C3489'}
+  ]}
+];
+
+function renderSchedule(){
+  var g = document.getElementById('sched-grid');
+  if(!g) return;
+  g.innerHTML = '';
+  var todayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];
+  days.forEach(function(day){
+    var col = document.createElement('div');
+    col.className = 'scol';
+    var hdr = document.createElement('div');
+    hdr.className = 'shdr';
+    hdr.textContent = day.name;
+    if(day.name === todayName) hdr.style.cssText = 'color:#7c3aed;font-weight:700;';
+    col.appendChild(hdr);
+    day.blocks.forEach(function(b, bi){
+      var key = day.name + '-' + bi;
+      var checked = D.schedChecks && D.schedChecks[key];
+      var el = document.createElement('div');
+      el.className = 'sblk' + (checked ? ' done' : '');
+      el.style.background = b.bg;
+      el.style.color = b.c;
+      el.innerHTML = '<span class="chk">✓</span><div>' + b.l + '</div><div style="font-size:10px;opacity:0.75;margin-top:2px;">' + b.t + '</div>';
+      el.onclick = function(){
+        if(!D.schedChecks) D.schedChecks = {};
+        D.schedChecks[key] = !D.schedChecks[key];
+        el.classList.toggle('done', D.schedChecks[key]);
+        save();
+      };
+      col.appendChild(el);
+    });
+    g.appendChild(col);
+  });
+}
+
+function exportCal(){
+  var now = new Date(); var dow = now.getDay();
+  var monday = new Date(now); monday.setDate(now.getDate()+(dow===0?1:8-dow)); monday.setHours(0,0,0,0);
+  var off = {Mon:0,Tue:1,Wed:2,Thu:3,Fri:4,Sat:5,Sun:6};
+  function pt(t){var m=t.match(/^(\d+):(\d+)/);return m?{h:parseInt(m[1]),m:parseInt(m[2])}:null;}
+  function pe(t){var m=t.match(/\u20133?(\d+):(\d+)/);if(!m)m=t.match(/[-](\d+):(\d+)/);return m?{h:parseInt(m[1]),m:parseInt(m[2])}:null;}
+  function pad(n){return n<10?'0'+n:''+n;}
+  function fdt(d,h,m){return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'T'+pad(h)+pad(m)+'00';}
+  var lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//MyrasKingdom//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:Myras Schedule'];
+  var uid=0;
+  days.forEach(function(day){
+    var date=new Date(monday); date.setDate(monday.getDate()+off[day.name]);
+    day.blocks.forEach(function(b){
+      var s=pt(b.t); var e=pe(b.t); if(!s) return;
+      if(!e){e={h:s.h,m:s.m+30};if(e.m>=60){e.h++;e.m-=60;}}
+      lines=lines.concat(['BEGIN:VEVENT','UID:myra-'+(uid++)+'@k',
+        'DTSTAMP:'+fdt(new Date(),new Date().getHours(),new Date().getMinutes()),
+        'DTSTART:'+fdt(date,s.h,s.m),'DTEND:'+fdt(date,e.h,e.m),
+        'SUMMARY:'+b.l.replace(/[^\x20-\x7E]/g,'').trim(),'RRULE:FREQ=WEEKLY','END:VEVENT']);
+    });
+  });
+  lines.push('END:VCALENDAR');
+  var blob=new Blob([lines.join('\r\n')],{type:'text/calendar'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='myras-schedule.ics'; a.click();
+}
+
+// ── Log ───────────────────────────────────────────────
+function todayStr(){ return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function addLog(){
+  var b=document.getElementById('log-book').value.trim(); if(!b) return;
+  D.log.unshift({date:todayStr(),book:b,slot:document.getElementById('log-slot').value,done:false,stars:0});
+  document.getElementById('log-book').value=''; save(); renderLog(); renderBadges();
+}
+function renderLog(){
+  var body=document.getElementById('log-body'); if(!body) return;
+  var done=D.log.filter(function(e){return e.done;}).length;
+  var ts=D.log.reduce(function(a,e){return a+e.stars;},0);
+  document.getElementById('s-sess').textContent=D.log.length;
+  document.getElementById('s-done').textContent=done;
+  document.getElementById('s-stars').textContent=ts;
+  document.getElementById('s-str').textContent=Math.min(new Set(D.log.filter(function(e){return e.done;}).map(function(e){return e.date;})).size,30);
+  body.innerHTML='';
+  if(!D.log.length){body.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:#9ca3af;font-family:sans-serif;">No sessions yet!</td></tr>';return;}
+  D.log.forEach(function(e,i){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td style="color:#9ca3af;white-space:nowrap;">'+e.date+'</td><td style="font-weight:bold;">'+e.book+'</td><td style="color:#9ca3af;">'+e.slot+'</td>'+
+      '<td><span class="bdg '+(e.done?'bdone':'bprog')+'" onclick="tglDone('+i+')">'+(e.done?'Done ✓':'Reading...')+'</span></td>'+
+      '<td>'+[1,2,3,4,5].map(function(s){return '<span style="cursor:pointer;font-size:15px;color:'+(s<=e.stars?'#f59e0b':'#d1d5db')+';" onclick="setStar('+i+','+s+')">★</span>';}).join('')+'</td>'+
+      '<td><button class="bsm" onclick="delLog('+i+')">✕</button></td>';
+    body.appendChild(tr);
+  });
+}
+function tglDone(i){D.log[i].done=!D.log[i].done;save();renderLog();renderBadges();}
+function setStar(i,s){D.log[i].stars=s;save();renderLog();renderBadges();}
+function delLog(i){D.log.splice(i,1);save();renderLog();renderBadges();}
+
+// ── Shelf ─────────────────────────────────────────────
+function addShelf(){
+  var t=document.getElementById('sh-title').value.trim();if(!t)return;
+  D.shelf.push({title:t,author:document.getElementById('sh-author').value.trim(),fav:false});
+  document.getElementById('sh-title').value='';document.getElementById('sh-author').value='';
+  save();renderShelf();
+}
+function renderShelf(){
+  var g=document.getElementById('shelf-grid');if(!g)return;
+  g.innerHTML=D.shelf.length?'':'<p style="font-family:sans-serif;font-size:13px;color:#9ca3af;">No books yet!</p>';
+  D.shelf.forEach(function(b,i){
+    var d=document.createElement('div');d.className='bkc';
+    d.innerHTML='<span class="fav" onclick="tglFav('+i+')">'+(b.fav?'⭐':'☆')+'</span>'+
+      '<div class="bkt">'+b.title+'</div>'+(b.author?'<div class="bka">'+b.author+'</div>':'')+
+      '<button class="bsm" style="margin-top:8px;" onclick="delShelf('+i+')">Remove</button>';
+    g.appendChild(d);
+  });
+}
+function tglFav(i){D.shelf[i].fav=!D.shelf[i].fav;save();renderShelf();}
+function delShelf(i){D.shelf.splice(i,1);save();renderShelf();}
+
+// ── Wishlist ──────────────────────────────────────────
+function addWish(){
+  var v=document.getElementById('wish-in').value.trim();if(!v)return;
+  D.wishes.push({title:v,got:false});document.getElementById('wish-in').value='';save();renderWishlist();
+}
+function renderWishlist(){
+  var ul=document.getElementById('wish-list');if(!ul)return;
+  ul.innerHTML=D.wishes.length?'':'<li style="font-family:sans-serif;font-size:13px;color:#9ca3af;padding:10px 0;">No books yet!</li>';
+  D.wishes.forEach(function(w,i){
+    var li=document.createElement('li');li.className='wi'+(w.got?' got':'');
+    li.innerHTML='<input type="checkbox" '+(w.got?'checked':'')+' onchange="tglWish('+i+')"><span>'+w.title+'</span><button class="wdel" onclick="delWish('+i+')">✕</button>';
+    ul.appendChild(li);
+  });
+}
+function tglWish(i){D.wishes[i].got=!D.wishes[i].got;save();renderWishlist();}
+function delWish(i){D.wishes.splice(i,1);save();renderWishlist();}
+
+// ── Badges ────────────────────────────────────────────
+var allBadges=[
+  {icon:'🌱',name:'First page',desc:'Add your first session',chk:function(d){return d.log.length>=1;}},
+  {icon:'📚',name:'Bookworm',desc:'Finish 5 books',chk:function(d){return d.log.filter(function(e){return e.done;}).length>=5;}},
+  {icon:'🏆',name:'Super reader',desc:'Finish 10 books',chk:function(d){return d.log.filter(function(e){return e.done;}).length>=10;}},
+  {icon:'⭐',name:'Star collector',desc:'Earn 10 stars',chk:function(d){return d.log.reduce(function(a,e){return a+e.stars;},0)>=10;}},
+  {icon:'🌟',name:'Shining star',desc:'Earn 25 stars',chk:function(d){return d.log.reduce(function(a,e){return a+e.stars;},0)>=25;}},
+  {icon:'🔥',name:'On a roll',desc:'Log 7 sessions',chk:function(d){return d.log.length>=7;}},
+  {icon:'🦄',name:'Unicorn reader',desc:'Add 5 books to wish list',chk:function(d){return d.wishes.length>=5;}},
+  {icon:'🏰',name:'Royal shelf',desc:'Add 5 books to shelf',chk:function(d){return d.shelf.length>=5;}},
+  {icon:'💎',name:'Diamond reader',desc:'Finish 20 books',chk:function(d){return d.log.filter(function(e){return e.done;}).length>=20;}},
+  {icon:'👑',name:'Reading royalty',desc:'Earn all other badges',chk:function(d){return allBadges.slice(0,-1).every(function(b){return b.chk(d);});}}
+];
+function renderBadges(){
+  var g=document.getElementById('badges-grid');if(!g)return;g.innerHTML='';
+  allBadges.forEach(function(b){
+    var earned=b.chk(D);
+    var div=document.createElement('div');div.className='bcard '+(earned?'earned':'locked');
+    div.innerHTML='<div class="bi">'+b.icon+'</div><div class="bn">'+b.name+'</div><div class="bd">'+b.desc+'</div>'+(earned?'<div style="font-size:11px;color:#d97706;margin-top:6px;font-family:sans-serif;">Earned! ✓</div>':'');
+    g.appendChild(div);
+  });
+}
+
+// ── Word Game ─────────────────────────────────────────
+var gWords=[
+  {e:'🐱',w:'cat',x:['kat','cet']},{e:'🐶',w:'dog',x:['dag','dug']},{e:'🌟',w:'star',x:['ster','stur']},
+  {e:'🍎',w:'apple',x:['aple','appl']},{e:'📚',w:'book',x:['buk','booc']},{e:'🌈',w:'rain',x:['rane','rayn']},
+  {e:'🐸',w:'frog',x:['frug','phrog']},{e:'🌸',w:'flower',x:['flauer','flowr']},{e:'🏰',w:'castle',x:['casel','castl']},
+  {e:'🦄',w:'horn',x:['hurn','hawn']},{e:'🌙',w:'moon',x:['mune','moone']},{e:'🐝',w:'bee',x:['be','bea']}
+];
+var gSc=0,gTot=0,gIdx=-1,gAns=false;
+function shuffle(a){return a.sort(function(){return Math.random()-0.5;});}
+function nextQ(){
+  gAns=false;document.getElementById('g-feedback').textContent='';
+  var prev=gIdx;do{gIdx=Math.floor(Math.random()*gWords.length);}while(gIdx===prev&&gWords.length>1);
+  var w=gWords[gIdx];document.getElementById('g-emoji').textContent=w.e;
+  var opts=shuffle([w.w].concat(w.x));var box=document.getElementById('g-choices');box.innerHTML='';
+  opts.forEach(function(o){
+    var b=document.createElement('button');b.className='cb';b.textContent=o;
+    b.onclick=function(){
+      if(gAns)return;gAns=true;gTot++;
+      if(o===w.w){gSc++;b.classList.add('correct');document.getElementById('g-feedback').textContent='🎉 Correct!';}
+      else{b.classList.add('wrong');document.getElementById('g-feedback').textContent='It\'s "'+w.w+'"!';
+        box.querySelectorAll('.cb').forEach(function(x){if(x.textContent===w.w)x.classList.add('correct');});}
+      document.getElementById('g-score').textContent='Score: '+gSc+' / '+gTot;
+    };
+    box.appendChild(b);
+  });
+}
+
+// ── Match Game ────────────────────────────────────────
+var mW=[['the','and','is','it','in','at','he','we','my','to','do','go','no','so','on','up'],
+  ['see','can','look','like','come','said','big','little','here','there','was','all','are','have','with','she'],
+  ['they','this','that','when','what','from','your','just','been','were','will','want','some','time','know','make']];
+var mLvl=0,mCts=[4,6,8],mFlip=[],mMat=0,mMov=0,mLock=false,mTmr=null,mSecs=0,mGo=false;
+function setML(l){mLvl=l;[0,1,2].forEach(function(i){document.getElementById('ml'+i).classList.toggle('active',i===l);});startMatch();}
+function startMatch(){
+  clearInterval(mTmr);mSecs=0;mGo=false;mMov=0;mMat=0;mFlip=[];mLock=false;
+  document.getElementById('m-moves').textContent=0;document.getElementById('m-matched').textContent=0;document.getElementById('m-time').textContent='0:00';
+  document.getElementById('m-win').style.display='none';
+  var pool=mW[mLvl].slice();shuffle(pool);var chosen=pool.slice(0,mCts[mLvl]);
+  var pairs=[];chosen.forEach(function(w){pairs.push({w:w,id:w+'a'},{w:w,id:w+'b'});});shuffle(pairs);
+  var g=document.getElementById('m-grid');if(!g)return;
+  g.style.gridTemplateColumns='repeat(4,1fr)';g.innerHTML='';
+  pairs.forEach(function(c){
+    var d=document.createElement('div');d.className='mc';d.dataset.word=c.w;
+    d.innerHTML='<div class="mi"><div class="mf">🌟</div><div class="mb">'+c.w+'</div></div>';
+    d.addEventListener('click',function(){
+      if(mLock||this.classList.contains('flipped')||this.classList.contains('matched'))return;
+      if(!mGo){mGo=true;mTmr=setInterval(function(){mSecs++;var mm=Math.floor(mSecs/60),ss=mSecs%60;document.getElementById('m-time').textContent=mm+':'+(ss<10?'0':'')+ss;},1000);}
+      this.classList.add('flipped');mFlip.push(this);
+      if(mFlip.length===2){
+        mLock=true;mMov++;document.getElementById('m-moves').textContent=mMov;
+        if(mFlip[0].dataset.word===mFlip[1].dataset.word){
+          mFlip[0].classList.add('matched');mFlip[1].classList.add('matched');mMat++;
+          document.getElementById('m-matched').textContent=mMat;mFlip=[];mLock=false;
+          if(mMat===mCts[mLvl]){clearInterval(mTmr);
+            var st=mMov<=mCts[mLvl]+2?'⭐⭐⭐':mMov<=mCts[mLvl]+6?'⭐⭐':'⭐';
+            var mm=Math.floor(mSecs/60),ss=mSecs%60;
+            document.getElementById('m-win-txt').textContent='All matched in '+mMov+' moves & '+(mm>0?mm+'m ':'')+ss+'s! '+st;
+            document.getElementById('m-win').style.display='block';}
+        }else{
+          mFlip[0].classList.add('wrong');mFlip[1].classList.add('wrong');
+          var ff=mFlip.slice();
+          setTimeout(function(){ff.forEach(function(c){c.classList.remove('flipped','wrong');});mFlip=[];mLock=false;},900);
+        }
+      }
+    });
+    g.appendChild(d);
+  });
+}
+
+// ── Math ──────────────────────────────────────────────
+var mScore=0,mTotal=0,mStreak=0,mAnswered=false;
+var emojis=['🍎','🌟','🦋','🐱','🌸','🎈','🍪','🐶','🌈','🦄'];
+function nextMath(){
+  mAnswered=false;document.getElementById('math-fb').textContent='';
+  var a=Math.floor(Math.random()*6),b=Math.floor(Math.random()*6),ans=a+b;
+  var e1=emojis[Math.floor(Math.random()*emojis.length)],e2=emojis[Math.floor(Math.random()*emojis.length)];
+  document.getElementById('math-visual').innerHTML='<span>'+Array(a).fill(e1).join('')+'</span><span style="font-size:22px;align-self:center;">+</span><span>'+Array(b).fill(e2).join('')+'</span>';
+  document.getElementById('math-q').textContent=a+' + '+b+' = ?';
+  var wrong=new Set([ans]);while(wrong.size<4){wrong.add(Math.floor(Math.random()*13));}
+  var choices=Array.from(wrong);choices.sort(function(){return Math.random()-0.5;});
+  var box=document.getElementById('math-choices');box.innerHTML='';
+  choices.forEach(function(c){
+    var btn=document.createElement('button');btn.className='cb';btn.style.cssText='font-size:22px;width:60px;height:60px;';btn.textContent=c;
+    btn.onclick=function(){
+      if(mAnswered)return;mAnswered=true;mTotal++;
+      document.getElementById('math-total').textContent=mTotal;
+      if(c===ans){mScore++;mStreak++;btn.classList.add('correct');document.getElementById('math-fb').textContent='🎉 '+(mStreak>2?'Streak '+mStreak+'!':'Correct!');}
+      else{mStreak=0;btn.classList.add('wrong');document.getElementById('math-fb').textContent='💡 Answer: '+ans;
+        box.querySelectorAll('.cb').forEach(function(x){if(parseInt(x.textContent)===ans)x.classList.add('correct');});}
+      document.getElementById('math-score').textContent=mScore;document.getElementById('math-streak').textContent=mStreak;
+    };
+    box.appendChild(btn);
+  });
+}
+function resetMath(){mScore=0;mTotal=0;mStreak=0;document.getElementById('math-score').textContent=0;document.getElementById('math-total').textContent=0;document.getElementById('math-streak').textContent=0;nextMath();}
+
+// ── Books ─────────────────────────────────────────────
+var sBooks=[
+  {title:'Angelina Ballerina',author:'Katharine Holabird',q:'Angelina+Ballerina+Holabird',tags:['ballet','brave'],color:'#F4C0D1'},
+  {title:'Fancy Nancy: Budding Ballerina',author:'Jane O\'Connor',q:'Fancy+Nancy+Budding+Ballerina',tags:['ballet','princess'],color:'#FAC775'},
+  {title:'The Princess Knight',author:'Cornelia Funke',q:'Princess+Knight+Cornelia+Funke',tags:['princess','brave','confident'],color:'#fde68a'},
+  {title:'Princess Truly: I Am Truly',author:'Kelly Greenawalt',q:'Princess+Truly+I+Am+Truly',tags:['princess','confident','kind'],color:'#C0DD97'},
+  {title:'The Very Fairy Princess',author:'Julie Andrews',q:'Very+Fairy+Princess+Julie+Andrews',tags:['princess','confident'],color:'#F4C0D1'},
+  {title:'Chrysanthemum',author:'Kevin Henkes',q:'Chrysanthemum+Kevin+Henkes',tags:['confident','kind'],color:'#B5D4F4'},
+  {title:'The Paper Bag Princess',author:'Robert Munsch',q:'Paper+Bag+Princess+Munsch',tags:['princess','brave'],color:'#FAC775'},
+  {title:'Be Kind',author:'Pat Zietlow Miller',q:'Be+Kind+Pat+Zietlow+Miller',tags:['kind'],color:'#B5D4F4'},
+  {title:'I Am Enough',author:'Grace Byers',q:'I+Am+Enough+Grace+Byers',tags:['confident','kind'],color:'#F4C0D1'},
+  {title:'Brave Irene',author:'William Steig',q:'Brave+Irene+William+Steig',tags:['brave'],color:'#CECBF6'},
+  {title:'Not All Princesses Dress in Pink',author:'Jane Yolen',q:'Not+All+Princesses+Dress+Pink+Yolen',tags:['princess','confident'],color:'#C0DD97'},
+  {title:'The Girl Who Never Made Mistakes',author:'Mark Pett',q:'Girl+Who+Never+Made+Mistakes+Pett',tags:['brave','confident'],color:'#fde68a'},
+  {title:'Enemy Pie',author:'Derek Munson',q:'Enemy+Pie+Derek+Munson',tags:['kind'],color:'#C0DD97'},
+  {title:'Tallulah\'s Tutu',author:'Marilyn Singer',q:'Tallulah+Tutu+Marilyn+Singer',tags:['ballet','brave'],color:'#CECBF6'},
+  {title:'Strictly No Elephants',author:'Lisa Mantchev',q:'Strictly+No+Elephants+Mantchev',tags:['kind'],color:'#B5D4F4'}
+];
+var actTag='all',allTags=['all','ballet','princess','brave','confident','kind'],cvCache={};
+function fetchCover(book,img){
+  if(cvCache[book.q]){if(cvCache[book.q]!=='none'){img.src=cvCache[book.q];img.style.display='block';img.nextSibling.style.display='none';}return;}
+  fetch('https://www.googleapis.com/books/v1/volumes?q='+book.q+'&maxResults=1')
+    .then(function(r){return r.json();}).then(function(data){
+      var cover=data.items&&data.items[0]&&data.items[0].volumeInfo.imageLinks&&(data.items[0].volumeInfo.imageLinks.thumbnail||data.items[0].volumeInfo.imageLinks.smallThumbnail);
+      if(cover){var sec=cover.replace('http://','https://');cvCache[book.q]=sec;img.src=sec;img.style.display='block';img.nextSibling.style.display='none';}
+      else cvCache[book.q]='none';
+    }).catch(function(){});
+}
+function renderBooks(){
+  var fg=document.getElementById('book-filters'),bg=document.getElementById('book-grid');if(!fg||!bg)return;
+  fg.innerHTML='';allTags.forEach(function(tag){
+    var b=document.createElement('button');b.className='lb'+(tag===actTag?' active':'');
+    b.textContent=tag==='all'?'🌟 All':tag.charAt(0).toUpperCase()+tag.slice(1);
+    b.onclick=function(){actTag=tag;renderBooks();};fg.appendChild(b);
+  });
+  bg.innerHTML='';
+  var filtered=actTag==='all'?sBooks:sBooks.filter(function(b){return b.tags.indexOf(actTag)>-1;});
+  filtered.forEach(function(book){
+    var inWish=D.wishes.some(function(w){return w.title===book.title;});
+    var div=document.createElement('div');div.style.cssText='border-radius:14px;overflow:hidden;border:2px solid '+(inWish?'#7c3aed':'#e9d5ff')+';cursor:pointer;background:#fff;';
+    var imgEl=document.createElement('img');imgEl.style.cssText='width:100%;aspect-ratio:2/3;object-fit:cover;display:none;';
+    var fb=document.createElement('div');fb.style.cssText='width:100%;aspect-ratio:2/3;background:'+book.color+';display:flex;align-items:center;justify-content:center;padding:8px;text-align:center;font-size:11px;font-weight:bold;color:#3c3489;line-height:1.3;';fb.textContent=book.title;
+    var info=document.createElement('div');info.style.cssText='padding:8px;';
+    info.innerHTML='<div style="font-size:11px;font-weight:bold;color:#1e1b2e;line-height:1.3;margin-bottom:3px;">'+book.title+'</div>'+
+      '<div style="font-size:10px;color:#9ca3af;font-family:sans-serif;margin-bottom:6px;">'+book.author+'</div>'+
+      '<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;">'+book.tags.map(function(t){return '<span style="background:#ede9fe;color:#7c3aed;font-size:9px;padding:2px 6px;border-radius:10px;font-family:sans-serif;">'+t+'</span>';}).join('')+'</div>'+
+      '<div style="background:'+(inWish?'#d1fae5':'#7c3aed')+';color:'+(inWish?'#059669':'#fff')+';border-radius:8px;padding:5px;text-align:center;font-family:sans-serif;font-size:11px;">'+(inWish?'✓ On wish list':'+ Wish list')+'</div>';
+    div.appendChild(imgEl);div.appendChild(fb);div.appendChild(info);
+    div.onclick=function(){if(!inWish){D.wishes.push({title:book.title,got:false});save();}renderBooks();renderWishlist();};
+    bg.appendChild(div);fetchCover(book,imgEl);
+  });
+}
+
+// ── Apps ──────────────────────────────────────────────
+var apps=[
+  {name:'Teach Your Monster to Read',desc:'Phonics & reading adventures',icon:'👾',color:'#CECBF6',text:'#3C3489',url:'https://apps.apple.com/us/app/teach-your-monster-to-read/id822175629'},
+  {name:'Starfall',desc:'Letters, sounds & early reading',icon:'⭐',color:'#fef3c7',text:'#92400e',url:'https://apps.apple.com/us/app/starfall-free/id510534020'},
+  {name:'Bob Books Reading Magic',desc:'Decodable books made interactive',icon:'📖',color:'#C0DD97',text:'#27500A',url:'https://apps.apple.com/us/app/bob-books-reading-magic-1/id424612805'},
+  {name:'Khan Academy Kids',desc:'Reading, math & more — free!',icon:'🦁',color:'#B5D4F4',text:'#0C447C',url:'https://apps.apple.com/us/app/khan-academy-kids/id1378467217'},
+  {name:'Epic! Kids Books',desc:'Huge library of kids books',icon:'🚀',color:'#F4C0D1',text:'#72243E',url:'https://apps.apple.com/us/app/epic-kids-books-educational/id719219382'},
+  {name:'Endless Reader',desc:'Sight words made fun',icon:'🔤',color:'#FAC775',text:'#633806',url:'https://apps.apple.com/us/app/endless-reader/id685366591'}
+];
+function renderApps(){
+  var g=document.getElementById('apps-grid');if(!g)return;g.innerHTML='';
+  apps.forEach(function(a){
+    var d=document.createElement('div');d.style.cssText='background:'+a.color+';border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;';
+    d.innerHTML='<div style="font-size:36px;margin-bottom:8px;">'+a.icon+'</div>'+
+      '<div style="font-size:13px;font-weight:bold;color:'+a.text+';margin-bottom:4px;line-height:1.3;">'+a.name+'</div>'+
+      '<div style="font-size:11px;color:'+a.text+';opacity:0.8;font-family:sans-serif;line-height:1.3;margin-bottom:10px;">'+a.desc+'</div>'+
+      '<div style="background:'+a.text+';color:'+a.color+';border-radius:20px;padding:5px 10px;font-family:sans-serif;font-size:12px;display:inline-block;">Open in App Store</div>';
+    d.onclick=function(){window.open(a.url,'_blank');};
+    g.appendChild(d);
+  });
+}
+
+// ── Print Schedule ────────────────────────────────────
+function printSchedule(){
+  var cols = '';
+  var todayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];
+  days.forEach(function(day){
+    var blocks = '';
+    day.blocks.forEach(function(b){
+      blocks += '<div style="background:'+b.bg+';color:'+b.c+';border-radius:6px;padding:6px 4px;text-align:center;font-size:10px;line-height:1.3;margin-bottom:4px;">'
+        +'<div style="font-weight:bold;">'+b.l+'</div>'
+        +'<div style="opacity:0.75;font-size:9px;">'+b.t+'</div></div>';
+    });
+    cols += '<div style="flex:1;min-width:0;">'
+      +'<div style="text-align:center;font-weight:bold;font-size:12px;color:'+(day.name===todayName?'#7c3aed':'#6b7280')+';padding:4px 0 8px;border-bottom:1px solid #e9d5ff;margin-bottom:6px;">'+day.name+'</div>'
+      +blocks+'</div>';
+  });
+
+  var html = '<!DOCTYPE html><html><head><title>Myras Weekly Schedule</title>'
+    +'<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:sans-serif;padding:24px;background:#fff;}'
+    +'h2{color:#7c3aed;text-align:center;font-size:20px;margin-bottom:4px;}'
+    +'p{text-align:center;color:#9ca3af;font-size:12px;margin-bottom:16px;}'
+    +'@media print{.noprint{display:none!important;}}</style></head>'
+    +'<body>'
+    +'<h2>Myras Weekly Schedule</h2>'
+    +'<p>'+new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</p>'
+    +'<div style="display:flex;gap:6px;">'+cols+'</div>'
+    +'<div class="noprint" style="text-align:center;margin-top:20px;">'
+    +'<button onclick="window.print()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;cursor:pointer;">Print / Save as PDF</button>'
+    +'</div>'
+    +'<script>window.onload=function(){window.print();}<\/script>'
+    +'</body></html>';
+
+  var blob = new Blob([html], {type:'text/html'});
+  var url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+}
+
+// ── Init ──────────────────────────────────────────────
+renderSchedule();
+renderMenu();
+renderLog();
+renderShelf();
+renderWishlist();
+renderBadges();
+renderBooks();
+renderApps();
+nextQ();
+startMatch();
+nextMath();
+</script>
+</body>
+</html>
